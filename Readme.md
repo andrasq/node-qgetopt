@@ -23,7 +23,7 @@ Simple little traditional Unix command-line option extractor, with enhancements
 
         // repeated options
         var options = getopt(process.argv, "f:h");
-        // ... -f f1 -h -f f2 -h -h => { f: ['f1', 'f2], h: 3 }
+        // ... -f f1 -h -f f2 -h -h => { f: ['f1', 'f2'], h: 3 }
 
 
 ### getopt( argv, optspec )

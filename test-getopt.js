@@ -3,7 +3,7 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-getopt = require('./getopt').getopt;
+getopt = require('./').getopt;
 
 module.exports = {
     'should return option': function(t) {
