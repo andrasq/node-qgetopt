@@ -59,3 +59,6 @@ Repated param options are gathered into an array.
   - `"h"` - flag, sets {h:true} if `-h` is present
   - `"a:"` - valued option with one argument, sets {a:123} if `-a 123` is present
   - `"a::"` - valued option with two arguments, sets {a:[1,23]} if `-a 1 23` is present
+  - `"(aa)"` - long named flag, sets {aa:true} if `-aa` is present
+  - `"(-aa)"` - long named double-dash flag, sets {aa:true} if `--aa` is present
+  - `"(-aa):"` - long named double-dash flag with one argument
