@@ -39,7 +39,9 @@ the options scan.  The special argument `--` ends scanning and is skipped.
 A `-` by itself is an argument and not a command option.
 
 Repeated flag options are counted; "-t -t -t" returns `{t: 3}`.
-Repated param options are gathered into an array.
+Repated param options "-a 1 -a 2","a:" are gathered into an array `{a: [1, 2]}`.
+Repeated multi-param options "-a 1 2 -a 3 4","a::" are gathered into an
+array of arrays `{a: [[1, 2], [3, 4]]}`.
 
 - `argv` is the command-line arguments array to parse in `process.argv`
   format.  The first two elements are 'node' and the name of the source file.

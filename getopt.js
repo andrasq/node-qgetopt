@@ -102,7 +102,12 @@ function getopt( argv, options ) {
         else {
             // leave single param flat, convert repeated params into array
             if (found[name]) {
-                if (!Array.isArray(found[name])) found[name] = [found[name]];
+                if (!Array.isArray(found[name])) {
+                    found[name] = found[name].length === 1 ? [found[name]] : [[found[name]]];
+                }
+                else if (Array.isArray(value) && !Array.isArray(found[name][0])) {
+                    found[name] = [found[name]];
+                }
                 found[name].push(value);
             }
             else found[name] = value;

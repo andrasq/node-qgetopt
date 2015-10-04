@@ -46,6 +46,12 @@ module.exports = {
         t.done();
     },
 
+    'should return repeated multi-param option': function(t) {
+        var opts = getopt("nodejs script.js -a 1 2 -a 3 4 -a 5 6", "a::");
+        t.deepEqual(opts.a, [[1,2], [3,4], [5,6]]);
+        t.done();
+    },
+
     'should not scan past non-switch argument': function(t) {
         var opts = getopt("nodejs script.js arg1 -a 12", "a:");
         t.ok(!opts.a);
