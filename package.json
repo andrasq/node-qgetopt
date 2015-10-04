@@ -1,0 +1,29 @@
+{
+  "name": "qgetopt",
+  "version": "1.0.0",
+  "description": "traditional unix command-line option extractor",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/andrasq/node-qgetopt"
+  },
+  "main": "index.js",
+  "author": {
+    "name": "Andras",
+    "url": "http://github.com/andrasq"
+  },
+  "engines": {
+    "node": ">=0.0.0"
+  },
+  "scripts": {
+    "test": "qunit test-*"
+  },
+  "keywords": [
+    "getopt", "unix", "command", "arguments"
+  ],
+  "dependencies": {
+  },
+  "devDependencies": {
+    "node-qunit": "0.7.0"
+  }
+}
