@@ -17,6 +17,15 @@ Simple little traditional Unix command-line option extractor, with enhancements
         var options = getopt(process.argv, "xy::");
         // ... -xy 12 345 => { xy: ['12', '345'] }
 
+        // equals-assigned options
+        var options = getopt(process.argv, "(-file):");
+        // ... --file=filename => { file: 'filename' }
+
+        // repeated options
+        var options = getopt(process.argv, "f:h");
+        // ... -f f1 -h -f f2 -h -h => { f: ['f1', 'f2], h: 3 }
+
+
 ### getopt( argv, optspec )
 
 Returns a hash with the found options, removes the options from the
@@ -28,6 +37,9 @@ command arguments, so e.g. `ls -l /tmp`.  Options have to begin with the `-`
 switch character.  The first argument that does not start with - ends
 the options scan.  The special argument `--` ends scanning and is skipped.
 A `-` by itself is an argument and not a command option.
+
+Repeated flag options are counted; "-t -t -t" returns `{t: 3}`.
+Repated param options are gathered into an array.
 
 - `argv` is the command-line arguments array to parse in `process.argv`
   format.  The first two elements are 'node' and the name of the source file.

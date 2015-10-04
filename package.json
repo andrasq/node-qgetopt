@@ -1,7 +1,7 @@
 {
   "name": "qgetopt",
-  "version": "1.0.0",
-  "description": "traditional unix command-line option extractor",
+  "version": "1.0.1",
+  "description": "traditional unix command-line option extractor, with enhancements",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",

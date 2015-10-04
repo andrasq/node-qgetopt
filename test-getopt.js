@@ -30,6 +30,13 @@ module.exports = {
         t.done();
     },
 
+    'should parse name=value option': function(t) {
+        var opts = getopt("nodejs script.js -a=1 -b=2", "a:b:");
+        t.equal(opts.a, 1);
+        t.equal(opts.b, 2);
+        t.done();
+    },
+
     'should set and return multiple options': function(t) {
         var opts = getopt("nodejs script.js -a 12 -b 34 56 -c 78", "a:b::c");
         t.equal(opts.a, 12);
@@ -63,6 +70,14 @@ module.exports = {
         var opts = getopt("nodejs script.js -h -h", "h");
         t.equal(opts.h, 2);
         t.equal(typeof opts.h, 'number');
+        t.done();
+    },
+
+    'should return array of repeated param option': function(t) {
+        var opts = getopt("nodejs script.js -a 1 -b 2 -b 3 -c 4", "a:b:c:");
+        t.deepEqual(opts.a, 1);
+        t.deepEqual(opts.b, [2, 3]);
+        t.deepEqual(opts.c, 4);
         t.done();
     },
 
