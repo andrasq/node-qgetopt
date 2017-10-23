@@ -1,6 +1,6 @@
 {
   "name": "qgetopt",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "traditional unix command-line option extractor, with enhancements",
   "license": "Apache-2.0",
   "repository": {
@@ -16,7 +16,9 @@
     "node": ">=0.0.0"
   },
   "scripts": {
-    "test": "qunit test-*"
+    "test": "qnit test-*",
+    "coverage": "nyc --reporter text --reporter lcov npm test",
+    "clean": "rm -r .nyc_output coverage"
   },
   "keywords": [
     "getopt", "unix", "command", "arguments"
@@ -24,6 +26,6 @@
   "dependencies": {
   },
   "devDependencies": {
-    "node-qunit": "0.7.0"
+    "qnit": "0.8.0"
   }
 }
