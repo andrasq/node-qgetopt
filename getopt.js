@@ -66,12 +66,13 @@ function getopt( argv, options ) {
 
     while ((opt = nextopt(argv, options))) {
         // option '-a' has name 'a'
-        var equals, name = opt, value;
+        var equals, specifiedOpt = opt, name = opt, value;
         var aliasDepth = 0;
 
         // if aliased, replace the specified name with the alias
         while (options[opt] && options[opt].alias) {
             opt = options[opt].alias;
+            name = opt;
             if (++aliasDepth > 1000) throw new Error("getopt alias loop");
         }
 
@@ -102,6 +103,7 @@ function getopt( argv, options ) {
         // strip the - and -- off the returned options (e.g. -h and --help)
         // Every option must begin with a '-', possibly '--', enforced by nextopt().
         name = (name[1] === '-') ? name.slice(2) : name.slice(1);
+        specifiedName = (specifiedOpt[1] === '-') ? specifiedOpt.slice(2) : specifiedOpt.slice(1);
 
         if (value === true) {
             // leave single yes/no option boolean, convert repeated yes/no option into count
@@ -125,6 +127,9 @@ function getopt( argv, options ) {
                 found[name].push(value);
             }
         }
+
+        // make aliased option available by the specified option name as well
+        if (specifiedName !== name) found[specifiedName] = found[name];
     }
 
     found._program = argv[0];
