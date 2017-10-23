@@ -12,7 +12,7 @@
  * Examples:
  *      argsHash = getopt(argv, "x:y::h(-help)");
  *
- * Copyright (C) 2014-2015 Andras Radics
+ * Copyright (C) 2014-2015,2017 Andras Radics
  * Licensed under the Apache License, Version 2.0
  *
  * 2014-09-28 - AR.
@@ -54,31 +54,37 @@ function nextopt( argv ) {
  * Options may be a traditional unix options tring eg "ynf:", or an option
  * name to option argument count mapping.  Modifies the input argv,
  * and returns the option switches and switch parameters found.
- * Extended objects and option aliases tbd later, in getopt-ext.
+ * Extended objects tbd later, in getopt-ext.
  */
 function getopt( argv, options ) {
     var i, opt, found = {};
     if (typeof argv === 'string') argv = argv.split(' ');
 
     if (typeof options === 'string') options = parseOptionsString(options);
-    if (getopt.normalizeOptionsObject) options = getopt.normalizeOptionsObject(options);
+    // TODO: semantics TBD
+    // if (getopt.normalizeOptionsObject) options = getopt.normalizeOptionsObject(options);
 
     while ((opt = nextopt(argv, options))) {
         // option '-a' has name 'a'
         var equals, name = opt, value;
         var aliasDepth = 0;
+
+        // if aliased, replace the specified name with the alias
         while (options[opt] && options[opt].alias) {
             opt = options[opt].alias;
             if (++aliasDepth > 1000) throw new Error("getopt alias loop");
         }
+
         if (options[opt] !== undefined) {
-            var argc = options[opt].argc || options[opt] || 0;
-            value = argv.splice(2, argc);
-            if (value.length < argc || value.indexOf('--') >= 0) {
-                throw new Error(opt + ": missing argument");
+            var argc = (typeof options[opt] === 'number') ? options[opt] : (options[opt].argc || 0);
+            if (argc <= 0) value = true;
+            else {
+                value = argv.splice(2, argc);
+                if (value.length < argc || value.indexOf('--') >= 0) {
+                    throw new Error(opt + ": missing argument");
+                }
+                if (value.length === 1) value = value[0];
             }
-            if (value.length === 1) value = value[0];
-            if (value.length === 0) value = true;
         }
         else if ((equals = opt.indexOf('=')) > 0 &&
             options[name = opt.slice(0, equals)] &&
@@ -92,25 +98,32 @@ function getopt( argv, options ) {
         else {
             throw new Error(opt + ": unrecognized option");
         }
+
         // strip the - and -- off the returned options (e.g. -h and --help)
-        if (name[0] === '-') name = name.slice(1);
-        if (name[0] === '-') name = name.slice(1);
+        // Every option must begin with a '-', possibly '--', enforced by nextopt().
+        name = (name[1] === '-') ? name.slice(2) : name.slice(1);
+
         if (value === true) {
             // leave single yes/no option boolean, convert repeated yes/no option into count
-            found[name] = (value === true ? (found[name] ? found[name] + 1 : true) : value);
+            found[name] = (found[name] ? found[name] + 1 : true);
         }
         else {
             // leave single param flat, convert repeated params into array
-            if (found[name]) {
-                if (!Array.isArray(found[name])) {
-                    found[name] = found[name].length === 1 ? [found[name]] : [[found[name]]];
-                }
-                else if (Array.isArray(value) && !Array.isArray(found[name][0])) {
-                    found[name] = [found[name]];
-                }
+            if (found[name] === undefined) {
+                // first occurrence of option
+                found[name] = value;
+            }
+            else if (!Array.isArray(value)) {
+                // repeated single-arg option, eg "--opt 1 --opt 2 --opt 3" => [1, 2, 3]
+                if (!Array.isArray(found[name])) found[name] = new Array(found[name]);
                 found[name].push(value);
             }
-            else found[name] = value;
+            else {
+                // repeated multi-arg option, eg "--opt 1 2 --opt 3 4" => [[1,2], [2,3]]
+                // TODO: make it easier for caller to distinguish one switch args [1,2] from multiple switches [[1,2], [3,4]]
+                if (!Array.isArray(found[name][0])) found[name] = new Array(found[name]);
+                found[name].push(value);
+            }
         }
     }
 

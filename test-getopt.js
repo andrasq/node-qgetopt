@@ -1,14 +1,44 @@
 /**
- * Copyright (C) 2014-2015 Andras Radics
+ * Copyright (C) 2014-2015,2017 Andras Radics
  * Licensed under the Apache License, Version 2.0
  */
 
-getopt = require('./').getopt;
+getopt = require('./index');
 
 module.exports = {
     'should return option': function(t) {
         var opts = getopt("nodejs script.js -v arg1 arg2", "v");
         t.ok(opts.v);
+        t.done();
+    },
+
+    'should return option from argv': function(t) {
+        var opts = getopt(["nodejs", "script.js", "-v", "arg1", "arg2"], "v");
+        t.ok(opts.v);
+        t.equal(opts._argv[0], "arg1");
+        t.done();
+    },
+
+    'should return - as an argument': function(t) {
+        var opts = getopt("nodejs script.js -v - -x", "vx");
+        t.ok(opts.v);
+        t.ok(!opts.x);
+        t.equal(opts._argv[0], "-");
+        t.done();
+    },
+
+    'should return long argument names': function(t) {
+        var opts = getopt("nodejs script.js --verbose -geometry 80x24 arg1", "(-verbose)(geometry)");
+        t.ok(opts.verbose);
+        t.ok(opts.geometry);
+        t.done();
+    },
+
+    'should not return switches from after --': function(t) {
+        var opts = getopt("nodejs script.js -x -- -y arg1 arg2", "xy");
+        t.ok(opts.x);
+        t.ok(!opts.y);
+        t.equal(opts._argv[0], "-y");
         t.done();
     },
 
@@ -80,16 +110,64 @@ module.exports = {
     },
 
     'should return array of repeated param option': function(t) {
-        var opts = getopt("nodejs script.js -a 1 -b 2 -b 3 -c 4", "a:b:c:");
+        var opts = getopt("nodejs script.js -a 1 -b 2 -b 3 -c 4 -b 5", "a:b:c:");
         t.deepEqual(opts.a, 1);
-        t.deepEqual(opts.b, [2, 3]);
+        t.deepEqual(opts.b, [2, 3, 5]);
         t.deepEqual(opts.c, 4);
         t.done();
     },
 
     'should throw error for unrecognized option': function(t) {
         try { var opts = getopt("nodejs script.js -x", "vc"); t.ok(false, "expected error"); }
-        catch (err) { t.ok(true); }
+        catch (err) { t.ok(err.message.indexOf('unrecognized') >= 0); }
+        t.done();
+    },
+
+    'should throw error for unrecognized alias': function(t) {
+        try { getopt("nodejs script.js -x", { '-x': { alias: '--other' } }); t.ok(false, "expected error") }
+        catch (err) { t.ok(err.message.indexOf('unrecognized') >= 0) }
+        t.done();
+    },
+
+    'should throw on missing argument': function(t) {
+        try { getopt("nodejs script.js -x", "x:"); t.ok(false, "expected error") }
+        catch (err) { t.ok(err.message.indexOf('missing argument') >= 0) }
+        t.done();
+    },
+
+    'should throw on alias loop': function(t) {
+        try { getopt("nodejs script.js -x", { '-x': { alias: '-x' } }); t.ok(false, "expected error") }
+        catch (err) { t.ok(err.message.indexOf('alias loop') >= 0) }
+        t.done();
+    },
+
+    'should accept empty string argument': function(t) {
+        var opts = getopt(["nodejs",  "script.js", "-f", "", "-h", "arg1"], "f:h");
+        t.strictEqual(opts.f, "");
+        t.strictEqual(opts.h, true);
+        t.done();
+    },
+
+    'should accept options as an object': function(t) {
+        var opts = getopt("nodejs script.js -f ff -h arg1", { '-f': 1, '-h': { argc: 0 } });
+        t.equal(opts.f, "ff");
+        t.strictEqual(opts.h, true);
+        t.equal(opts._argv[0], "arg1");
+        t.done();
+    },
+
+    'should accept name=value option with options object': function(t) {
+        var opts = getopt("nodejs script.js -f=ff -h arg1", { '-f': { argc: 1 }, '-h': 0 });
+        t.equal(opts.f, "ff");
+        t.equal(opts.h, true);
+        t.done();
+    },
+
+    'should accept options object aliases': function(t) {
+        var opts = getopt("nodejs script.js -f ff -h arg1", { '-f': { alias: '--filename' }, '--filename': 1, '-h': 0 });
+        t.equal(opts.filename, "ff");
+        t.equal(opts.h, true);
+        t.equal(opts._argv[0], "arg1");
         t.done();
     },
 };
