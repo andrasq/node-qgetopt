@@ -1,6 +1,9 @@
 QGetopt
 =======
 
+[![Build Status](https://api.travis-ci.org/andrasq/node-qgetopt.svg?branch=master)](https://travis-ci.org/andrasq/node-qgetopt?branch=master)
+[![Coverage Status](https://codecov.io/github/andrasq/node-qgetopt/coverage.svg?branch=master)](https://codecov.io/github/andrasq/node-qgetopt?branch=master)
+
 Simple little traditional Unix command-line option extractor, with enhancements
 
         var getopt = require('qgetopt').getopt;
