@@ -12,7 +12,7 @@
  * Examples:
  *      argsHash = getopt(argv, "x:y::h(-help)");
  *
- * Copyright (C) 2014-2015,2017 Andras Radics
+ * Copyright (C) 2014-2015,2017-2019 Andras Radics
  * Licensed under the Apache License, Version 2.0
  *
  * 2014-09-28 - AR.
@@ -62,6 +62,7 @@ function getopt( argv, options ) {
 
     if (typeof options === 'string') options = parseOptionsString(options);
     // TODO: semantics TBD
+    // TODO: support eg `{ name: ['-h', '--help'], help: 'show help' }` notation
     // if (getopt.normalizeOptionsObject) options = getopt.normalizeOptionsObject(options);
 
     while ((opt = nextopt(argv, options))) {
