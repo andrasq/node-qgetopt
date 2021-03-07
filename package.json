@@ -3,7 +3,7 @@
   "version": "1.1.0",
   "description": "traditional unix command-line option extractor, with enhancements",
   "keywords": [ "getopt", "unix", "command", "arguments" ],
-  "main": "index.js",
+  "main": "getopt.js",
 
   "license": "Apache-2.0",
   "repository": { "type": "git", "url": "git://github.com/andrasq/node-qgetopt" },

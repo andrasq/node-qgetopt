@@ -16,7 +16,7 @@ Simple little traditional Unix command-line option extractor, with enhancements
         // ... --file filename --help => { file: 'filename', help: true }
 
         // multi-parameter options
-        var options = getopt(process.argv, "xy::");
+        var options = getopt(process.argv, "(xy)::");
         // ... -xy 12 345 => { xy: ['12', '345'] }
 
         // equals-assigned options

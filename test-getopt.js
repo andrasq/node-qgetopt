@@ -3,7 +3,7 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-getopt = require('./index');
+getopt = require('./');
 
 module.exports = {
     'should return option': function(t) {
@@ -166,6 +166,7 @@ module.exports = {
     'should accept options object aliases': function(t) {
         var opts = getopt("nodejs script.js -f ff -h arg1", { '-f': { alias: '--filename' }, '--filename': 1, '-h': 0 });
         t.equal(opts.filename, "ff");
+        t.equal(opts.f, "ff");
         t.equal(opts.h, true);
         t.equal(opts._argv[0], "arg1");
         t.done();
