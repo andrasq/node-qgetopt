@@ -72,6 +72,48 @@ array of arrays `{a: [[1, 2], [3, 4]]}`.
   - `"(-aa):"` - long named double-dash flag with one argument
 
 
+### getopt.option().parse( argv )
+
+Configure the options with `.option`, parse arguments array with `.parse`.  All the `option` config
+calls chain.
+
+`option(switches, usage)` defines an option switch, its aliases, required parameters, and usage help.
+`switches` is one or more dash-prefixed option names followed by placeholders for the required parameters.
+If defining more than one option name, the last will be the actual name and the others will be aliases.
+Each call to `option()` (re)defines the named switches, in the order given.
+
+    // define a `width` option taking 1 argument, aliased as `-w` and `-dx`
+    getopt.options('-w, -dx, --width <mm>', 'item width')
+
+`version()` is a special form of `option()` that installs a switch to print the
+program version and exit.  Default switch is `('-V, --version')`.  Note that `version()` redefines
+any previous meanings of the `-V` and `--version` switches.
+
+`help()` is a special form of `option()` that installs a switch to format and
+print the program usage instructions and exit.  Default switch is `('-h, --help')`.
+The help usage message is computed from the `option`-configured usage and help strings.
+Note that `help()` redefines any previous meanings of the `-h` and `--help` switches.
+
+    var getopt = require('qgetopt');
+    var opts = getopt
+        .program('myProgramName', 'v1.2.3', 'demo options config')
+        .version()
+        .help()
+        .option('-w, --width <N>', 'item width in mm')
+        .option('-l, --length <M>', 'item length in mm')
+        .parse(['node', 'script.js', '--help']);
+
+    // outputs:
+    myProgramName v1.2.3 -- demo options config
+    usage: myProgramName [options]
+
+    options:
+      -V, --version      print program version and exit
+      -h, --help         print program usage help and exit
+      -w, --width <N>    item widht in mm
+      -l, --length <M>   item lenth in mm
+
+
 Change Log
 ----------
 
