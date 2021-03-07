@@ -1,12 +1,10 @@
 language: node_js
 node_js:
+  - 0.6
   - 0.10
-  - 4
-  - 6
   - 8
-  - 9
-  - 10
-  - 11
+  - 12
+  - 15
 before_install:
   - npm install qnit
 after_success:
