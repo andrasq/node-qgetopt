@@ -119,6 +119,12 @@ module.exports = {
         t.done();
     },
 
+    'should throw error for invalid options string': function(t) {
+        try { var opts = getopt("nodejs script.js -x", 123); t.ok(false, "expected error"); }
+        catch (err) { t.ok(err.message.indexOf('options must be') >= 0); }
+        t.done();
+    },
+
     'should throw error for unrecognized option': function(t) {
         try { var opts = getopt("nodejs script.js -x", "vc"); t.ok(false, "expected error"); }
         catch (err) { t.ok(err.message.indexOf('unrecognized') >= 0); }
