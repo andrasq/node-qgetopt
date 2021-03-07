@@ -26,8 +26,8 @@ module.exports.nextopt = nextopt;
 
 module.exports.program = function(x, y, z) { return new Flags().program(x, y, z) }
 module.exports.option = function(x, y) { return new Flags().option(x, y) }
-module.exports.version = function() { return new Flags().version() }
-module.exports.help = function() { return new Flags().help() }
+module.exports.version = function(x, y) { return new Flags().version(x, y) }
+module.exports.help = function(x, y) { return new Flags().help(x, y) }
 
 /**
  * Remove and return the next option from argv, or false.
@@ -199,8 +199,8 @@ function Flags( ) {
 Flags.prototype.program = function program( name, version, description ) {
     this._opts.name = name; this._opts.version = version; this._opts.description = description; return this }
 Flags.prototype.option = function option(names, help) { parseOption(this._opts, names, help); return this };
-Flags.prototype.version = function version(version) { parseVersion(this._opts, version); return this }
-Flags.prototype.help = function help() { parseHelp(this._opts); this._usage = this._opts['--help'].handler(); return this }
+Flags.prototype.version = function version(opt, help) { parseVersion(this._opts, opt, help); return this }
+Flags.prototype.help = function help(opt, help) { parseHelp(this._opts, opt, help); this._usage = this._opts['--help'].handler(); return this }
 Flags.prototype.parse = function parse(argv) { var opts = getopt(argv, this._opts); opts._usage = this._opts.__usage; return opts }
 
 // names: -u, --user, --username <name of user>
@@ -217,15 +217,15 @@ function parseOption( flags, names, help, handler ) {
     }
 }
 
-function parseVersion( flags ) {
-    parseOption(flags, '-V, --version', 'print program version and exit', function() {
+function parseVersion( flags, opt, help ) {
+    parseOption(flags, opt || '-V, --version', help || 'print program version and exit', function() {
         console.log('%s', flags.version);
         process.exit(0);
     })
 }
 
-function parseHelp( flags, description ) {
-    parseOption(flags, '-h, --help', 'print usage help and exit', function(foundFlag) {
+function parseHelp( flags, opt, help ) {
+    parseOption(flags, opt || '-h, --help', help || 'print program usage help and exit', function(foundFlag) {
         // do not sort the usage lines, leave them in user-entered order
         var allUsage = Object.keys(flags)
             .filter(function(k) { return typeof flags[k] === 'object' && !flags[k].alias })

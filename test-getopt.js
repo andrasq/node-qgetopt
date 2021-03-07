@@ -235,6 +235,7 @@ module.exports = {
         'uses provided program name, version and description in the usage message': function(t) {
             var opts = getopt
                 .program('mockProg', 'v1.2.3', 'mock program for argument parsing')
+                .version()
                 .help()
                 .parse('node test.j')
             t.contains(opts._usage, 'mockProg v1.2.3 -- mock program for argument parsing');
