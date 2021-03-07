@@ -174,6 +174,7 @@ function parseOptionsString( string ) {
     return options;
 }
 
+
 var util = require('util');
 var path = require('path');
 
@@ -267,6 +268,85 @@ function normalizeOptionsObject( config ) {
         process.exit();
     }
 }
+
+
+function Flags( ) {
+    Object.defineProperty(this, '_opts', { enumerable: true, value: {
+        name: path.basename(process.argv[1]),
+        version: '',
+        description: '',
+    }})
+}
+Flags.prototype.name = function name(progName) { this._opts.name = progName; return this };
+Flags.prototype.version = function version(version) { version ? this._opts.version = version : parseVersion(this._opts); return this };
+Flags.prototype.description = function description(usage) { this._opts.description = usage; return this };
+Flags.prototype.option = function option(names, help) { parseOption(this._opts, names, help); return this };
+Flags.prototype.help = function help() { parseHelp(this._opts); this._usage = this._opts['--help'].handler(true); return this }
+Flags.prototype.parse = function parse(argv) { var opts = getopt(argv, this._opts); opts._usage = this._opts.__usage; return opts }
+
+// names: -u, --user, --username <name of user>
+function parseOption( flags, names, help, handler ) {
+    var parts = names.split(/[, ]+/);
+    var aliases = parts.filter(function(str) { return str[0] === '-' });
+    var params = parts.filter(function(str) { return str[0] !== '-' });
+    var optionName = aliases.pop();
+    // TODO: rename 'usage' to 'help', maybe rename 'form' to 'usage'?
+    // maybe: treat [x] params optional: argc vs maxArgc
+    flags[optionName] = { argc: params.length, form: names, usage: help, handler: handler };
+    for (var i = 0; i < aliases.length; i++) {
+        flags[aliases[i]] = { alias: optionName };
+    }
+}
+
+function parseVersion( flags ) {
+    parseOption(flags, '-V, --version', 'show version and exit', function() {
+        console.log('%s', flags.version);
+        process.exit(0);
+    })
+}
+
+function parseHelp( flags, description ) {
+    parseOption(flags, '-h, --help', 'show usage and exit', function(noexit) {
+        // do not sort the usage lines, leave them in user-entered order
+        var allUsage = Object.keys(flags)
+            .filter(function(k) { return typeof flags[k] === 'object' && !flags[k].alias })
+            .map(function(k) { return [flags[k].form || k, flags[k].usage] });
+        var longestUsage = allUsage.reduce(function(max, pair) { return Math.max(max, pair[0].length) }, 0);
+        var usage = '';
+        usage += util.format('%s %s -- %s\n', flags.name, flags.version || '', flags.description || '');
+        usage += util.format('usage: %s\n', flags.usage || 'script [options]');
+        usage += util.format('\n');
+        usage += util.format('options:\n');
+        var spaces = new Array(longestUsage + 1).join(' ');
+        for (var i = 0; i < allUsage.length; i++) {
+            usage += util.format('  %s%s   %s\n', allUsage[i][0], spaces.slice(0, longestUsage - allUsage[i][0].length), allUsage[i][1]);
+        }
+        if (!noexit) { console.log(usage); process.exit(0); }
+        return flags.__usage = usage;
+    })
+}
+
+
+/** quicktest:
+
+var opts = new Flags()
+    .version('v0.1.0')
+    .name('testProg')
+    .description('test show usage')
+    .option('-x, -w, --width N', 'item width')
+    .option('-y, -h, --height M', 'item height')
+    .version()
+    .help()
+    .parse(['node', 'test', '-x', '1', '--width', '2', '--help', 'foo', 'bar'])
+    ;
+
+console.log(opts);
+//opts._opts['--help'].handler();
+//console.log("AR: parse:", opts.parse && opts.parse("node test.js -x 1 -y 2 --help foo bar"));
+console.log("AR: Done.");
+
+/**/
+
 
 // quick test:
 // console.log( getopt("js test.js -a 1 -name=value --verbose --value=33 -c -b 2 3 -- -d foo".split(" "), "a:(name):b::c(-verbose)(-value):d:") );
