@@ -249,4 +249,72 @@ module.exports = {
             t.done();
         },
     },
+
+    'getopt.parse': {
+        'parse extracts options': function(t) {
+            var opts = getopt
+                .option('-v, --verbose', 'verbose mode')
+                .option('-x, --xpos <X>', 'horizontal position')
+                .option('-y, --ypos <Y>', 'vertical position')
+                .parse('node test.js -x 11 -v --ypos 22 foo bar');
+            t.strictContains(opts, { verbose: true, xpos: '11', ypos: '22', _argv: ['foo', 'bar'] });
+            t.done();
+        },
+
+        'version and help register switches': function(t) {
+            t.ok(getopt.version().parse('node test.js')._recognizedOptions['-V']);
+            t.ok(getopt.version().parse('node test.js')._recognizedOptions['--version']);
+            t.ok(getopt.help().parse('node test.js')._recognizedOptions['-h']);
+            t.ok(getopt.help().parse('node test.js')._recognizedOptions['--help']);
+            t.done();
+        },
+
+        'version and help switches are not sticky': function(t) {
+            getopt.help().version().parse('node test.js');
+            t.ok(!getopt.version().parse('node test.js')._recognizedOptions['--help']);
+            t.ok(!getopt.help().parse('node test.js')._recognizedOptions['--version']);
+            t.done();
+        },
+
+        'version prints version and exits': function(t) {
+            var output = '';
+            var spy = t.stubOnce(process, 'exit');
+            t.stubOnce(process.stdout, 'write', function(s) { output += s });
+            getopt.program('prog', '1.2.3', 'mock usage').version().parse('node test.js --version');
+            t.ok(spy.called);
+            t.contains(output, /^1.2.3\n$/);
+            t.done();
+        },
+
+        'help prints usage and exits': function(t) {
+            var output = '';
+            var spy = t.stubOnce(process, 'exit');
+            t.stubOnce(process.stdout, 'write', function(s) { output += s });
+            getopt.program('mockProg', '1.2.3', 'mock usage').version().help().parse('node test.js --help');
+            t.ok(spy.called);
+            t.contains(output, /^mockProg 1.2.3 -- mock usage/);
+            t.contains(output, /-h, --help/);
+            t.contains(output, /-V, --version/);
+            t.done();
+        },
+
+        'help prints generic usage and exits': function(t) {
+            var output = '';
+            var spy = t.stubOnce(process, 'exit');
+            t.stubOnce(process.stdout, 'write', function(s) { output += s });
+            getopt.help().parse('node test.js --help');
+            t.ok(spy.called);
+            t.contains(output, 'script  -- run script');
+            t.done();
+        },
+
+        'uses provided program name, version and description in the usage message': function(t) {
+            var opts = getopt
+                .program('mockProg', 'v1.2.3', 'mock program for argument parsing')
+                .help()
+                .parse('node test.j')
+            t.contains(opts._usage, 'mockProg v1.2.3 -- mock program for argument parsing');
+            t.done();
+        },
+    },
 };

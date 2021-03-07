@@ -24,6 +24,10 @@ module.exports = function(av,opts) { return getopt(av,opts) };
 module.exports.getopt = getopt;
 module.exports.nextopt = nextopt;
 
+module.exports.program = function(x, y, z) { return new Flags().program(x, y, z) }
+module.exports.option = function(x, y) { return new Flags().option(x, y) }
+module.exports.version = function() { return new Flags().version() }
+module.exports.help = function() { return new Flags().help() }
 
 /**
  * Remove and return the next option from argv, or false.
@@ -286,18 +290,21 @@ function normalizeOptionsObject( config ) {
 }
 
 
+/**
+ * parse options according to the config defined with calls to .option()
+ */
 function Flags( ) {
     Object.defineProperty(this, '_opts', { enumerable: true, value: {
-        name: path.basename(process.argv[1]),
+        name: '',
         version: '',
         description: '',
     }})
 }
-Flags.prototype.name = function name(progName) { this._opts.name = progName; return this };
-Flags.prototype.version = function version(version) { version ? this._opts.version = version : parseVersion(this._opts); return this };
-Flags.prototype.description = function description(usage) { this._opts.description = usage; return this };
+Flags.prototype.program = function program( name, version, description ) {
+    this._opts.name = name; this._opts.version = version; this._opts.description = description; return this }
 Flags.prototype.option = function option(names, help) { parseOption(this._opts, names, help); return this };
-Flags.prototype.help = function help() { parseHelp(this._opts); this._usage = this._opts['--help'].handler(true); return this }
+Flags.prototype.version = function version(version) { parseVersion(this._opts, version); return this }
+Flags.prototype.help = function help() { parseHelp(this._opts); this._usage = this._opts['--help'].handler(); return this }
 Flags.prototype.parse = function parse(argv) { var opts = getopt(argv, this._opts); opts._usage = this._opts.__usage; return opts }
 
 // names: -u, --user, --username <name of user>
@@ -315,40 +322,38 @@ function parseOption( flags, names, help, handler ) {
 }
 
 function parseVersion( flags ) {
-    parseOption(flags, '-V, --version', 'show version and exit', function() {
+    parseOption(flags, '-V, --version', 'print program version and exit', function() {
         console.log('%s', flags.version);
         process.exit(0);
     })
 }
 
 function parseHelp( flags, description ) {
-    parseOption(flags, '-h, --help', 'show usage and exit', function(noexit) {
+    parseOption(flags, '-h, --help', 'print usage help and exit', function(foundFlag) {
         // do not sort the usage lines, leave them in user-entered order
         var allUsage = Object.keys(flags)
             .filter(function(k) { return typeof flags[k] === 'object' && !flags[k].alias })
-            .map(function(k) { return [flags[k].form || k, flags[k].usage] });
+            .map(function(k) { return [flags[k].form, flags[k].usage] });
         var longestUsage = allUsage.reduce(function(max, pair) { return Math.max(max, pair[0].length) }, 0);
         var usage = '';
-        usage += util.format('%s %s -- %s\n', flags.name, flags.version || '', flags.description || '');
-        usage += util.format('usage: %s\n', flags.usage || 'script [options]');
+        usage += util.format('%s %s -- %s\n', flags.name || 'script', flags.version || '', flags.description || 'run script');
+        usage += util.format('usage: %s %s\n', flags.name || 'script', '[options]');
         usage += util.format('\n');
         usage += util.format('options:\n');
         var spaces = new Array(longestUsage + 1).join(' ');
         for (var i = 0; i < allUsage.length; i++) {
-            usage += util.format('  %s%s   %s\n', allUsage[i][0], spaces.slice(0, longestUsage - allUsage[i][0].length), allUsage[i][1]);
+            usage += util.format('  %s%s   %s\n',
+                allUsage[i][0], spaces.slice(0, longestUsage - allUsage[i][0].length), allUsage[i][1]);
         }
-        if (!noexit) { console.log(usage); process.exit(0); }
+        if (foundFlag) { console.log(usage); process.exit(0); }
         return flags.__usage = usage;
     })
 }
 
 
 /** quicktest:
-
 var opts = new Flags()
-    .version('v0.1.0')
-    .name('testProg')
-    .description('test show usage')
+    .program('testProg', 'v0.1.0', 'test show usage')
     .option('-x, -w, --width N', 'item width')
     .option('-y, -h, --height M', 'item height')
     .version()
@@ -360,9 +365,8 @@ console.log(opts);
 //opts._opts['--help'].handler();
 //console.log("AR: parse:", opts.parse && opts.parse("node test.js -x 1 -y 2 --help foo bar"));
 console.log("AR: Done.");
-
 /**/
 
-
 // quick test:
-// console.log( getopt("js test.js -a 1 -name=value --verbose --value=33 -c -b 2 3 -- -d foo".split(" "), "a:(name):b::c(-verbose)(-value):d:") );
+// console.log( getopt("js test.js -a 1 -name=value --verbose --value=33 -c -b 2 3 -- -d foo".split(" "),
+//     "a:(name):b::c(-verbose)(-value):d:") );
