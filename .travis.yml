@@ -1,6 +1,7 @@
 language: node_js
 node_js:
-  - 0.6
+  # 0.6 crashes on `npm install qnit` in travis.ci
+  - 0.8
   - 0.10
   - 8
   - 12
