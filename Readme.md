@@ -75,7 +75,7 @@ array of arrays `{a: [[1, 2], [3, 4]]}`.
 Change Log
 ----------
 
-- 1.2.0 - undocumented: support commander-like verbose config
+- 1.2.0 - remove options object support, add commander-like options config
 - 1.1.0 - uncodumented: support an options object
 - 1.0.2 - make aliased options available under both names
 - 1.0.1 - first released version

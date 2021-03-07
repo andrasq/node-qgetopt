@@ -71,7 +71,6 @@ function getopt( argv, options ) {
 
     if (typeof options === 'string') options = parseOptionsString(options);
     else if (typeof options !== 'object') throw new Error('getopt: options must be a string or an options object');
-    if (!options.parse) options = normalizeOptionsObject(options);
 
     var parsedOptions = options;
     options = {};
@@ -185,109 +184,6 @@ function parseOptionsString( string ) {
 
 var util = require('util');
 var path = require('path');
-
-/**
- * rearrange a user options config into options object format
- * Also assembles the built-in help and attaches it as options.__usage
- */
-function normalizeOptionsObject( config ) {
-    // do not normalize preformatted config objects
-    if (!config.options) return config;
-
-    var name = config.name || process.argv[1] && path.basename(process.argv[1]);
-    var version = config.version || '0';
-    var description = config.description || '$ node ' + name;
-    var switches = config.options;
-    var keys = Object.keys(switches);
-
-    var helpMessage = util.format("%s %s -- %s\n", name, version, description);
-    if (config.usage) helpMessage += "usage: " + config.usage + "\n";
-    else if (!keys.length && !config.showHelp) {
-        helpMessage += util.format("usage: %s ...\n", name);
-    }
-    else {
-        helpMessage += util.format("usage: %s [options] ...\n", name)
-        helpMessage += "\n";
-        helpMessage += "Options:\n";
-    }
-
-    // using keys supports both { options: { ... } } and { options: [ ... ] }
-    var options = {};
-    for (var keyi=0; keyi<keys.length; keyi++) {
-        var key = keys[keyi];
-        var flag, agrcount, form, usage, handler, alias;
-/**
-        if (Array.isArray(switches[keys[i]])) {
-            if (switches[i].length < 4) throw new Error('config format: [flag, argcount, form, usage, ?handler]');
-            flag = switches[i][0];
-            flag = flag ? [].concat(flag) : [];
-            if (!flag.length) throw new Error('config format: flag name required');
-            argcount = [ switches[i][1] ];
-            form = switches[i][2];
-            usage = switches[i][3];
-            handler = switches[i][4];
-        } else
-**/
-        {
-            flag = switches[key].flag || switches[key].switches || switches[key].short || switches[key].name || switches[key].n;
-            flag = flag ? [].concat(flag) : [];
-            flag.unshift(key);
-            var argcount = switches[key].argcount || switches[key].argc || switches[key].ac;
-            form = switches[key].form || switches[key].format || switches[key].fmt;
-            usage = switches[key].h || switches[key].help || switches[key].usage || switches[key].u;
-            handler = switches[key].handler || switches[key].run;
-            alias = switches[key].alias;
-        }
-
-        for (var i=0; i<flag.length; i++) flag[i] = prefixFlagWithDash(flag[i]);
-        dedupFlags(flag);
-        if (!argcount) argcount = 0;
-        if (!form) {
-            form = flag.join(', ');
-            if (argcount > 0) form += (argcount === 1 ? " <arg>" : util.format(" <%d args>", argcount));
-        }
-        if (!usage) usage = '';
-        if (handler && typeof handler !== 'function') throw new Error('config: handler must be a function');
-
-        options[flag[0]] = { argc: argcount, alias: alias, form: form, usage: usage, handler: handler };
-        for (var j=1; j<flag.length; j++) if (!options[flag[j]]) options[flag[j]] = { alias: flag[0] };
-
-        helpMessage += "  " + form + "\n";
-        if (usage) helpMessage += "        " + usage + "\n";
-    }
-
-    if (config.showHelp === true) {
-        var helpSwitches = [];
-        if (!options.h) { options.h = { handler: showUsage }; helpSwitches.push('-h') }
-        if (!options.help) { options.help = { handler: showUsage }; helpSwitches.push('--help') }
-        if (helpSwitches.length > 0) {
-            helpMessage += "  " + helpSwitches.join(', ') + "\n";
-            helpMessage += "        show this help message\n";
-        }
-    }
-    options.__usage = helpMessage;
-
-    return options;
-
-    function prefixFlagWithDash( flag ) {
-        // flags that already specify the dash are left as is, eg '-h', '-name', '--help'
-        if (flag[0] === '-') return flag
-        // short options use one dash, long options use two dashes
-        return (flag.length === 1 ? '-' : '--') + flag;
-    }
-
-    function dedupFlags( flag ) {
-        // remove duplicates, as from eg { 'z': { name: [ '-z' ] } }
-        for (var i=0; i<flag.length; i++) {
-            if (flag.lastIndexOf(flag[i]) > i) { flag.splice(i, 1); --i }
-        }
-    }
-
-    function showUsage() {
-        console.log(helpMessage);
-        process.exit();
-    }
-}
 
 
 /**
