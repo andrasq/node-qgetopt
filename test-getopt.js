@@ -3,7 +3,9 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-getopt = require('./');
+'use strict';
+
+var getopt = require('./');
 
 module.exports = {
     'should return option': function(t) {

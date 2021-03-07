@@ -18,6 +18,8 @@
  * 2014-09-28 - AR.
  */
 
+'use strict';
+
 module.exports = function(av,opts) { return getopt(av,opts) };
 module.exports.getopt = getopt;
 module.exports.nextopt = nextopt;
@@ -29,7 +31,9 @@ module.exports.nextopt = nextopt;
  * All other argv elements will be left, including options arguments.
  */
 function nextopt( argv ) {
-    var opt = argv[2];
+    if (argv._optind === undefined) argv._optind = 2;
+    var optind = argv._optind;
+    var opt = argv[optind];
 
     if (opt && opt[0] !== '-') {
         // argument, not an option switch
@@ -62,8 +66,8 @@ function getopt( argv, options ) {
     if (typeof argv === 'string') argv = argv.split(' ');
 
     if (typeof options === 'string') options = parseOptionsString(options);
-    else if (typeof options === 'object') options = normalizeOptionsObject(options);
-    else throw new Error('getopt: options must be a string or an options object');
+    else if (typeof options !== 'object') throw new Error('getopt: options must be a string or an options object');
+    if (!options.parse) options = normalizeOptionsObject(options);
 
     var parsedOptions = options;
     options = {};
@@ -110,7 +114,7 @@ function getopt( argv, options ) {
         // Every option must begin with a '-', possibly '--', enforced by nextopt().
         var flag = name;
         name = (name[1] === '-') ? name.slice(2) : name.slice(1);
-        specifiedName = (specifiedOpt[1] === '-') ? specifiedOpt.slice(2) : specifiedOpt.slice(1);
+        var specifiedName = (specifiedOpt[1] === '-') ? specifiedOpt.slice(2) : specifiedOpt.slice(1);
 
         if (value === true) {
             // leave single yes/no option boolean, convert repeated yes/no option into count
@@ -167,8 +171,8 @@ function parseOptionsString( string ) {
         else {
             name = "-" + string[i];
         }
-        options[name] = 0;
-        for (j=0; string[i+1+j] === ':'; j++) options[name] += 1;
+        options[name] = { argc: 0, usage: '', help: '' };
+        for (j=0; string[i+1+j] === ':'; j++) options[name].argc += 1;
         i += j;
     }
     return options;
@@ -192,7 +196,7 @@ function normalizeOptionsObject( config ) {
     var switches = config.options;
     var keys = Object.keys(switches);
 
-    helpMessage = util.format("%s %s -- %s\n", name, version, description);
+    var helpMessage = util.format("%s %s -- %s\n", name, version, description);
     if (config.usage) helpMessage += "usage: " + config.usage + "\n";
     else if (!keys.length && !config.showHelp) {
         helpMessage += util.format("usage: %s ...\n", name);
@@ -208,11 +212,23 @@ function normalizeOptionsObject( config ) {
     for (var keyi=0; keyi<keys.length; keyi++) {
         var key = keys[keyi];
         var flag, agrcount, form, usage, handler, alias;
+/**
+        if (Array.isArray(switches[keys[i]])) {
+            if (switches[i].length < 4) throw new Error('config format: [flag, argcount, form, usage, ?handler]');
+            flag = switches[i][0];
+            flag = flag ? [].concat(flag) : [];
+            if (!flag.length) throw new Error('config format: flag name required');
+            argcount = [ switches[i][1] ];
+            form = switches[i][2];
+            usage = switches[i][3];
+            handler = switches[i][4];
+        } else
+**/
         {
             flag = switches[key].flag || switches[key].switches || switches[key].short || switches[key].name || switches[key].n;
             flag = flag ? [].concat(flag) : [];
             flag.unshift(key);
-            argcount = switches[key].argcount || switches[key].argc || switches[key].ac;
+            var argcount = switches[key].argcount || switches[key].argc || switches[key].ac;
             form = switches[key].form || switches[key].format || switches[key].fmt;
             usage = switches[key].h || switches[key].help || switches[key].usage || switches[key].u;
             handler = switches[key].handler || switches[key].run;
