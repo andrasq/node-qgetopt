@@ -238,6 +238,16 @@ module.exports = {
             t.done();
         },
 
+        'options allows spaces after usage string': function(t) {
+            var opts = getopt
+                .option('  -c, --count <N>  ', 'count')
+                .parse('node test.js -c 1 --count 2 3 4');
+            t.deepEqual(opts.count, [1, 2]);
+            t.ok(opts._recognizedOptions['-c'].alias);
+            t.ok(opts._recognizedOptions['--count'].argc);
+            t.done();
+        },
+
         'uses provided program name, version and description in the usage message': function(t) {
             var opts = getopt
                 .program('mockProg', 'v1.2.3', 'mock program for argument parsing')

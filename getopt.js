@@ -203,11 +203,11 @@ Flags.prototype.version = function version(opt, help) { parseVersion(this._opts,
 Flags.prototype.help = function help(opt, help) { parseHelp(this._opts, opt, help); this._usage = this._opts['--help'].handler(); return this }
 Flags.prototype.parse = function parse(argv) { var opts = getopt(argv, this._opts); opts._usage = this._opts.__usage; return opts }
 
-// names: -u, --user, --username <name of user>
+// names like '-u, --user, --username <name of user>'
 function parseOption( flags, names, help, handler ) {
     var parts = names.split(/[, ]+/);
     var aliases = parts.filter(function(str) { return str[0] === '-' });
-    var params = parts.filter(function(str) { return str[0] !== '-' });
+    var params = parts.filter(function(str) { return str && str[0] !== '-' });
     var optionName = aliases.pop();
     // TODO: rename 'usage' to 'help', maybe rename 'form' to 'usage'?
     // maybe: treat [x] params optional: argc vs maxArgc

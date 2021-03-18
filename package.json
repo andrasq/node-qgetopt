@@ -1,6 +1,6 @@
 {
   "name": "qgetopt",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "traditional unix command-line option extractor, with enhancements",
   "keywords": [ "getopt", "unix", "command", "arguments" ],
   "main": "getopt.js",

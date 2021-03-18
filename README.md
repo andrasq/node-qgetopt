@@ -117,6 +117,7 @@ Note that `help()` redefines any previous meanings of the `-h` and `--help` swit
 Change Log
 ----------
 
+- 1.2.1 - allow trailing spaces in .option switches
 - 1.2.0 - remove options object support, add commander-like options config
 - 1.1.0 - uncodumented: support an options object
 - 1.0.2 - make aliased options available under both names
