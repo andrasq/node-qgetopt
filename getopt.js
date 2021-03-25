@@ -110,7 +110,8 @@ function getopt( argv, options ) {
             opt = opt.slice(0, equals);
         }
         else {
-            throw new Error(opt + ": unrecognized option");
+            // linux error is "invalid option", bsd is "illegal option" or "unknown operand"
+            throw new Error(opt + ": unknown option");
         }
 
         // strip the - and -- off the returned options (e.g. -h and --help)

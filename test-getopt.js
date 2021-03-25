@@ -127,13 +127,13 @@ module.exports = {
 
     'should throw error for unrecognized option': function(t) {
         try { var opts = getopt("nodejs script.js -x", "vc"); t.ok(false, "expected error"); }
-        catch (err) { t.ok(err.message.indexOf('unrecognized') >= 0); }
+        catch (err) { t.ok(err.message.indexOf('unknown option') >= 0); }
         t.done();
     },
 
     'should throw error for unrecognized alias': function(t) {
         try { getopt("nodejs script.js -x", { '-x': { alias: '--other' } }); t.ok(false, "expected error") }
-        catch (err) { t.ok(err.message.indexOf('unrecognized') >= 0) }
+        catch (err) { t.ok(err.message.indexOf('unknown option') >= 0) }
         t.done();
     },
 
