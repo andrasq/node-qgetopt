@@ -288,5 +288,23 @@ module.exports = {
             t.contains(opts._usage, 'mockProg v1.2.3 -- mock program for argument parsing');
             t.done();
         },
+
+        'accepts name=value option and alias': function(t) {
+            var opts = getopt
+                .option('-j, --jobs N')
+                .parse('node test --jobs=4');
+            t.equal(opts.jobs, 4);
+            t.strictEqual(opts.j, undefined);
+            t.strictEqual(opts['jobs=4'], undefined);
+
+            var opts = getopt
+                .option('-j, --jobs N')
+                .parse('node test -j=4');
+            t.equal(opts.jobs, 4);
+            t.equal(opts.j, 4);
+            t.strictEqual(opts['j=4'], undefined);
+
+            t.done();
+        },
     },
 };

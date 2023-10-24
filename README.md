@@ -71,6 +71,11 @@ array of arrays `{a: [[1, 2], [3, 4]]}`.
   - `"(-aa)"` - long named double-dash flag, sets {aa:true} if `--aa` is present
   - `"(-aa):"` - long named double-dash flag with one argument
 
+Option names must be left separate e.g. `-a -b` and not combined as `-ab`.  Switches must be
+separated from their arguments by a space, or for single-parameter arguments, an `=` equal sign.
+
+    node command.js --count 3
+    node command.js --count=3
 
 ### getopt.option().comment().version().help().parse( argv )
 
@@ -124,6 +129,7 @@ Note that `help()` redefines any previous meanings of the `-h` and `--help` swit
 Change Log
 ----------
 
+- 1.3.1 - fix `--count=3` style equal-assigned argument passing
 - 1.3.0 - `comment` usage message
 - 1.2.1 - allow trailing spaces in .option switches
 - 1.2.0 - remove options object support, add commander-like options config

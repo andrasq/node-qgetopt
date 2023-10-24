@@ -80,8 +80,15 @@ function getopt( argv, options ) {
 
     while ((opt = nextopt(argv, options))) {
         // option '-a' has name 'a'
-        var equals, specifiedOpt = opt, name = opt, value;
+        var specifiedOpt = opt, name = opt, value;
         var aliasDepth = 0;
+
+        // find the option name with --name=value options
+        var equals = opt.indexOf('=');
+        if (equals > 0) {
+            var optarg = opt.slice(equals + 1);
+            name = specifiedOpt = opt = opt.slice(0, equals);
+        }
 
         // if aliased, replace the specified name with the alias
         while (options[opt] && options[opt].alias) {
@@ -93,6 +100,7 @@ function getopt( argv, options ) {
         if (options[opt] !== undefined) {
             var argc = (typeof options[opt] === 'number') ? options[opt] : (options[opt].argc || 0);
             if (argc <= 0) value = true;
+            else if (argc === 1 && optarg !== undefined) value = optarg;
             else {
                 value = argv.splice(2, argc);
                 if (value.length < argc || value.indexOf('--') >= 0) {
@@ -100,15 +108,6 @@ function getopt( argv, options ) {
                 }
                 if (value.length === 1) value = value[0];
             }
-        }
-        else if ((equals = opt.indexOf('=')) > 0 &&
-            options[name = opt.slice(0, equals)] &&
-            options[name] &&
-            (options[name] === 1 || options[name].argc === 1))
-        {
-            // allow equals-separated option params, eg --value=3
-            value = opt.slice(equals+1);
-            opt = opt.slice(0, equals);
         }
         else {
             // linux error is "invalid option", bsd is "illegal option" or "unknown operand"
@@ -200,7 +199,7 @@ function Flags( ) {
 }
 Flags.prototype.program = function program( name, version, description ) {
     this._opts.name = name; this._opts.version = version; this._opts.description = description; return this }
-Flags.prototype.option = function option(names, help) { parseOption(this._opts, names, help); return this };
+Flags.prototype.option = function option(names, help) { parseOption(this._opts, names, help || ''); return this };
 Flags.prototype.comment = function comment(text) { parseComment(this._opts, text); return this };
 Flags.prototype.version = function version(opt, help) { parseVersion(this._opts, opt, help); return this }
 Flags.prototype.help = function help(opt, help) { parseHelp(this._opts, opt, help); this._usage = this._opts['--help'].handler(); return this }
@@ -275,12 +274,14 @@ var opts = new Flags()
     .program('testProg', 'v0.1.0', 'test show usage')
     .option('-x, -w, --width N', 'item width')
     .option('-y, -h, --height M', 'item height')
+    .option('-j, --jobs N', 'job count')
     .version()
     .help()
-    .parse(['node', 'test', '-x', '1', '--width', '2', '--help', 'foo', 'bar'])
+    // .parse(['node', 'test', '-x', '1', '--width', '2', '--help', 'foo', 'bar'])
+    .parse('node test -x 1 -j=2')
     ;
 
-console.log(opts);
+console.log("AR: got opts", Object.keys(opts).reduce(function(map, k){ if (k[0] !== '_') map[k] = opts[k]; return map }, {}));
 //opts._opts['--help'].handler();
 //console.log("AR: parse:", opts.parse && opts.parse("node test.js -x 1 -y 2 --help foo bar"));
 console.log("AR: Done.");
