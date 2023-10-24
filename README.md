@@ -1,6 +1,6 @@
 QGetopt
 =======
-[![Build Status](https://api.travis-ci.org/andrasq/node-qgetopt.svg?branch=master)](https://travis-ci.org/andrasq/node-qgetopt?branch=master)
+[![Build Status](https://github.com/andrasq/node-qgetopt/actions/workflows/nodejs.yml/badge.svg)](https://github.com/andrasq/node-qgetopt/actions/workflows/nodejs.yml)
 [![Coverage Status](https://coveralls.io/repos/github/andrasq/node-qgetopt/badge.svg?branch=master)](https://coveralls.io/github/andrasq/node-qgetopt?branch=master)
 
 Simple little traditional Unix command-line option extractor, with enhancements
