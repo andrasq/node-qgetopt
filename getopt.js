@@ -12,7 +12,7 @@
  * Examples:
  *      argsHash = getopt(argv, "x:y::h(-help)");
  *
- * Copyright (C) 2014-2015,2017-2019,2021 Andras Radics
+ * Copyright (C) 2014-2015,2017-2019,2021,2023 Andras Radics
  * Licensed under the Apache License, Version 2.0
  *
  * 2014-09-28 - AR.
@@ -60,7 +60,7 @@ function nextopt( argv ) {
 
 /**
  * Extract the command-line switches according to the options template.
- * Options may be a traditional unix options tring eg "ynf:", or an option
+ * Options may be a traditional unix options string eg "ynf:", or an option
  * name to option argument count mapping.  Modifies the input argv,
  * and returns the option switches and switch parameters found.
  * Extended objects tbd later, in getopt-ext.
@@ -76,6 +76,7 @@ function getopt( argv, options ) {
     options = {};
     for (var key in parsedOptions) options[key] = parsedOptions[key];
     delete options.__usage;
+    delete options.__last;
 
     while ((opt = nextopt(argv, options))) {
         // option '-a' has name 'a'
@@ -200,6 +201,7 @@ function Flags( ) {
 Flags.prototype.program = function program( name, version, description ) {
     this._opts.name = name; this._opts.version = version; this._opts.description = description; return this }
 Flags.prototype.option = function option(names, help) { parseOption(this._opts, names, help); return this };
+Flags.prototype.comment = function comment(text) { parseComment(this._opts, text); return this };
 Flags.prototype.version = function version(opt, help) { parseVersion(this._opts, opt, help); return this }
 Flags.prototype.help = function help(opt, help) { parseHelp(this._opts, opt, help); this._usage = this._opts['--help'].handler(); return this }
 Flags.prototype.parse = function parse(argv) { var opts = getopt(argv, this._opts); opts._usage = this._opts.__usage; return opts }
@@ -210,12 +212,19 @@ function parseOption( flags, names, help, handler ) {
     var aliases = parts.filter(function(str) { return str[0] === '-' });
     var params = parts.filter(function(str) { return str && str[0] !== '-' });
     var optionName = aliases.pop();
-    // TODO: rename 'usage' to 'help', maybe rename 'form' to 'usage'?
+    // TODO: rename 'usage' to 'help', rename 'form' to 'usage'? (to match parseOptionString)
     // maybe: treat [x] params optional: argc vs maxArgc
     flags[optionName] = { argc: params.length, form: names, usage: help, handler: handler };
+    // optional fields .actions[], .comments[]
+    flags.__last = flags[optionName];
     for (var i = 0; i < aliases.length; i++) {
         flags[aliases[i]] = { alias: optionName };
     }
+}
+
+function parseComment( flags, comment ) {
+    var lastFlag = flags.__last;
+    if (lastFlag) lastFlag.comments ? lastFlag.comments.push(comment) : lastFlag.comments = [comment];
 }
 
 function parseVersion( flags, opt, help ) {
@@ -228,10 +237,23 @@ function parseVersion( flags, opt, help ) {
 function parseHelp( flags, opt, help ) {
     parseOption(flags, opt || '-h, --help', help || 'print program usage help and exit', function(foundFlag) {
         // do not sort the usage lines, leave them in user-entered order
-        var allUsage = Object.keys(flags)
-            .filter(function(k) { return typeof flags[k] === 'object' && !flags[k].alias })
-            .map(function(k) { return [flags[k].form, flags[k].usage] });
-        var longestUsage = allUsage.reduce(function(max, pair) { return Math.max(max, pair[0].length) }, 0);
+        var longestUsage = 0, longestHelp = 0;
+        var allUsage = [];
+        for (var k in flags) {
+            if (k === '__last' || typeof flags[k] !== 'object' || flags[k].alias) continue;
+            var flag = flags[k];
+            allUsage.push([flag.form, flag.usage]);
+            if (flag.comments) {
+                for (var i = 0; i < flag.comments.length; i++) allUsage.push(['', flag.comments[i]]);
+            }
+            if (flag.form.length > longestUsage) longestUsage = flag.form.length;
+            if (flag.usage.length > longestHelp) longestHelp = flag.usage.length;
+        }
+
+        // TODO: scan allUsage, wrap any overlong usage lines
+        for (var i = 0; i < allUsage.length; i++) {
+        }
+
         var usage = '';
         usage += util.format('%s %s -- %s\n', flags.name || 'script', flags.version || '', flags.description || 'run script');
         usage += util.format('usage: %s %s\n', flags.name || 'script', '[options]');

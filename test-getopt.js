@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2015,2017,2021 Andras Radics
+ * Copyright (C) 2014-2015,2017,2021,2023 Andras Radics
  * Licensed under the Apache License, Version 2.0
  */
 
@@ -235,6 +235,37 @@ module.exports = {
             getopt.help().parse('node test.js --help');
             t.ok(spy.called);
             t.contains(output, 'script  -- run script');
+            t.done();
+        },
+
+        'help includes comments': function(t) {
+            var output = '';
+            var spy = t.stubOnce(process, 'exit');
+            t.stubOnce(process.stdout, 'write', function(s) { output += s });
+            getopt
+              .help()
+              .option('-c, --count N', 'count')
+              .comment('line below count')
+              .comment('another line below that')
+              .option('-d D', 'opt d')
+              .comment('line below D')
+              .parse('node test.js --help');
+            t.ok(spy.called);
+            t.contains(output, 'line below count')
+            t.ok(output.indexOf('line below count') > output.indexOf('count'));
+            t.ok(output.indexOf('another line below that') > output.indexOf('line below count'));
+            t.ok(output.indexOf('line below D') > output.indexOf('opt d'));
+            t.contains(output, 'script  -- run script');
+            t.done();
+        },
+
+        'ignores a bare comment without a preceding option': function(t) {
+            var output = '';
+            var spy = t.stubOnce(process, 'exit');
+            t.stubOnce(process.stdout, 'write', function(s) { output += s });
+            getopt.program().comment('text').option('-q').help().parse('node test.js --help');
+            t.ok(spy.called);
+            t.notContains(output, 'text');
             t.done();
         },
 

@@ -41,7 +41,7 @@ the options scan.  The special argument `--` ends scanning and is skipped.
 A `-` by itself is an argument and not a command option.
 
 Repeated flag options are counted; "-t -t -t" returns `{t: 3}`.
-Repated param options "-a 1 -a 2","a:" are gathered into an array `{a: [1, 2]}`.
+Repeated param options "-a 1 -a 2","a:" are gathered into an array `{a: [1, 2]}`.
 Repeated multi-param options "-a 1 2 -a 3 4","a::" are gathered into an
 array of arrays `{a: [[1, 2], [3, 4]]}`.
 
@@ -72,18 +72,21 @@ array of arrays `{a: [[1, 2], [3, 4]]}`.
   - `"(-aa):"` - long named double-dash flag with one argument
 
 
-### getopt.option().parse( argv )
+### getopt.option().comment().version().help().parse( argv )
 
 Configure the options with `.option`, parse arguments array with `.parse`.  All the `option` config
 calls chain.
 
 `option(switches, usage)` defines an option switch, its aliases, required parameters, and usage help.
-`switches` is one or more dash-prefixed option names followed by placeholders for the required parameters.
-If defining more than one option name, the last will be the actual name and the others will be aliases.
+`switches` is one or more dash-prefixed option names followed by placeholders for the required parameters,
+all separated by spaces and/or commas; see the example.
+If the option has more than one name, the last will be the canonical name and the others will be aliases.
 Each call to `option()` (re)defines the named switches, in the order given.
 
     // define a `width` option taking 1 argument, aliased as `-w` and `-dx`
     getopt.options('-w, -dx, --width <mm>', 'item width')
+
+`comment(text)` includes the text in the help message below the option after which it occurs.
 
 `version()` is a special form of `option()` that installs a switch to print the
 program version and exit.  Default switch is `('-V, --version')`.  Note that `version()` redefines
@@ -100,23 +103,28 @@ Note that `help()` redefines any previous meanings of the `-h` and `--help` swit
         .version()
         .help()
         .option('-w, --width <N>', 'item width in mm')
+        .comment('measure accurately')
+        .comment('measure twice')
         .option('-l, --length <M>', 'item length in mm')
         .parse(['node', 'script.js', '--help']);
 
-    // outputs:
+    // --help outputs:
     myProgramName v1.2.3 -- demo options config
     usage: myProgramName [options]
 
     options:
       -V, --version      print program version and exit
       -h, --help         print program usage help and exit
-      -w, --width <N>    item widht in mm
+      -w, --width <N>    item width in mm
+                         measure accurately
+                         measure twice
       -l, --length <M>   item lenth in mm
 
 
 Change Log
 ----------
 
+- 1.3.0 - `comment` usage message
 - 1.2.1 - allow trailing spaces in .option switches
 - 1.2.0 - remove options object support, add commander-like options config
 - 1.1.0 - uncodumented: support an options object
