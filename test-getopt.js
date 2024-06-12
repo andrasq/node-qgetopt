@@ -304,6 +304,25 @@ module.exports = {
             t.equal(opts.j, 4);
             t.strictEqual(opts['j=4'], undefined);
 
+            // sets all options, does not overwrite others, continues scanning
+            var opts = getopt
+                .option('--first A B')
+                .option('-j, -jo, --jobs N')
+                .option('--count N')
+                .option('--last N')
+                .parse('node test --first 1 2 --jobs 3 -j=4 -j=5 --count 2 --last 99');
+            // gather all occurrences of the flag into an array
+            t.deepEqual(opts.first, [1, 2]);
+            // sets space-assigned arguments, does not leak equal-assigned values to following flags
+            t.equal(opts.last, 99);
+            t.equal(opts.count, 2);
+            // separates option name from the equal sign
+            t.strictEqual(opts['j=4'], undefined);
+            // sets both the flag alias used and the canonical name
+            t.deepEqual(opts.j, [3, 4, 5]);
+            t.deepEqual(opts.jobs, [3, 4, 5]);
+            // t.equal(opts.jo, undefined)
+
             t.done();
         },
     },

@@ -129,6 +129,7 @@ Note that `help()` redefines any previous meanings of the `-h` and `--help` swit
 Change Log
 ----------
 
+- 1.3.2 - fix --count=3 equal-assigned options leaking into other flags
 - 1.3.1 - fix `--count=3` style equal-assigned argument passing
 - 1.3.0 - `comment` usage message
 - 1.2.1 - allow trailing spaces in .option switches

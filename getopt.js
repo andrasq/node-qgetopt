@@ -82,11 +82,12 @@ function getopt( argv, options ) {
         // option '-a' has name 'a'
         var specifiedOpt = opt, name = opt, value;
         var aliasDepth = 0;
+        var optarg = undefined;
 
         // find the option name with --name=value options
         var equals = opt.indexOf('=');
         if (equals > 0) {
-            var optarg = opt.slice(equals + 1);
+            optarg = opt.slice(equals + 1);
             name = specifiedOpt = opt = opt.slice(0, equals);
         }
 
